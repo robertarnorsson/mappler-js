@@ -1,16 +1,41 @@
 {
-  "name": "mappler",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "mappler-js",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "rollup": "rollup -c --bundleConfigAsCjs"
   },
-  "keywords": [],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robertarnorsson/mappler-js.git"
+  },
+  "keywords": [
+    "map",
+    "mapping",
+    "mappler"
+  ],
+  "author": "Robert Arnorsson",
   "license": "ISC",
-  "description": "",
+  "description": "Mapping library for use with React",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^26.0.1",
+    "@rollup/plugin-node-resolve": "^15.2.4",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.0",
     "@types/node": "^22.5.5",
+    "@types/react": "^18.3.8",
+    "rollup-plugin-dts": "^6.1.1",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "rollup-plugin-postcss": "^4.0.2",
+    "tslib": "^2.7.0",
     "typescript": "^5.6.2"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "rollup": "^4.22.4"
   }
 }
