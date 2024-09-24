@@ -1,25 +1,17 @@
 import React from 'react';
-import TileLayer from './TileLayer';
 import { MapContextProvider } from '../context/MapContext';
+import { MapProps } from '../types/MapTypes';
+import '../styles/map.css';
 
-type MapProps = {
-  config: {
-    tileUrl: string;
-    initialZoom: number;
-    initialCenter: [number, number];
-    tileSize?: number;
-  };
-};
-
-const Map: React.FC<MapProps> = ({ config }) => {
-  if (!config.tileUrl || !config.initialCenter || !config.initialZoom) {
+const Map: React.FC<MapProps & { children: React.ReactNode }> = ({ config, children }) => {
+  if (config.tileUrl === undefined || config.initialCenter === undefined || config.initialZoom === undefined) {
     return <div>Map configuration is incomplete</div>;
   }
 
   return (
     <MapContextProvider config={config}>
-      <div className="map-container">
-        <TileLayer />
+      <div className="map-container" style={{ position: 'relative', width: '100%', height: '100%' }}>
+        {children}
       </div>
     </MapContextProvider>
   );
