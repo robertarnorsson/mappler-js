@@ -1,18 +1,9 @@
 export type MapConfig = {
   tileUrl: string;
-  initialZoom: number;
-  initialCenter: [number, number];
-  tileSize?: number;
-  allowNegativeTiles?: boolean;
-  minZoom?: number;
-  maxZoom?: number;
-  bounds?: {
-    minX: number;
-    minY: number;
-    maxX: number;
-    maxY: number;
-  };
-};
+  tileSize: number;
+  minZoom: number;
+  maxZoom: number;
+}
 
 
 export type MapProps = {
