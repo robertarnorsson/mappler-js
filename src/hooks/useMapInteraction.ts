@@ -14,6 +14,7 @@ export const useMapInteraction = (canvasRef: React.RefObject<HTMLCanvasElement>)
       event.preventDefault();
       const zoomSensitivity = 0.001;
       const newZoom = zoom - event.deltaY * zoomSensitivity;
+      console.log(newZoom);
       setZoom(Math.max(config.minZoom, Math.min(config.maxZoom, newZoom)));
     };
 
