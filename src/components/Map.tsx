@@ -12,6 +12,9 @@ const Map: React.FC = () => {
 
   // State to track canvas size
   const [canvasSize, setCanvasSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
+  
+  const previousZoomRef = useRef<number>(zoom);
+  const previousCenterRef = useRef<[number, number]>(center);
 
   const resizeCanvas = () => {
     const canvas = canvasRef.current;
@@ -53,13 +56,12 @@ const Map: React.FC = () => {
     // Increment the render ID
     const currentRenderId = ++renderId;
 
-    // Wrap rendering logic inside requestAnimationFrame
     const render = () => {
       if (currentRenderId !== renderId) return; // Outdated render, abort
 
       ctx.imageSmoothingEnabled = false;
 
-      // Clear the canvas
+      // Clear the canvas at the start of the render cycle
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const tileSize = config.tileSize;
@@ -113,17 +115,57 @@ const Map: React.FC = () => {
         return distA - distB;
       });
 
-      const renderTiles = () => {
-        const tilePromises: Promise<void>[] = [];
+      // Function to get the best available tile image from cache
+      const getBestTileImage = (x: number, y: number, z: number): { img: HTMLImageElement; tileX: number; tileY: number; tileZ: number } | null => {
+        let currentX = x;
+        let currentY = y;
+        let currentZ = z;
+        while (currentZ >= config.minZoom) {
+          const tileKey = `${currentZ}/${currentX}/${currentY}`;
+          const img = loadTileImage.cache.get(tileKey);
+          if (img) {
+            return { img, tileX: currentX, tileY: currentY, tileZ: currentZ };
+          }
+          // Move to parent tile
+          currentX = Math.floor(currentX / 2);
+          currentY = Math.floor(currentY / 2);
+          currentZ -= 1;
+        }
+        return null;
+      };
 
+      const renderTiles = () => {
         for (const { x, y } of tileCoords) {
           const tilePosX = Math.floor((x * tileSize * tileScale) - topLeftX);
           const tilePosY = Math.floor((y * tileSize * tileScale) - topLeftY);
           const tileWidth = Math.ceil(tileSize * tileScale) + 1;
           const tileHeight = Math.ceil(tileSize * tileScale) + 1;
 
-          const promise = loadTileImage(x, y, tileZoomLevel, config.tileUrl)
-            .then((img: any) => {
+          // Try to get the best tile image from cache
+          const bestTile = getBestTileImage(x, y, tileZoomLevel);
+          if (bestTile) {
+            const { img, tileX: imgX, tileY: imgY, tileZ: imgZ } = bestTile;
+
+            const zoomDiff = tileZoomLevel - imgZ;
+            const scaleMultiplier = Math.pow(2, zoomDiff);
+
+            const adjustedTileSize = tileSize * tileScale * scaleMultiplier;
+
+            const adjustedTilePosX = Math.floor((imgX * adjustedTileSize) - topLeftX);
+            const adjustedTilePosY = Math.floor((imgY * adjustedTileSize) - topLeftY);
+
+            ctx.drawImage(
+              img,
+              adjustedTilePosX,
+              adjustedTilePosY,
+              adjustedTileSize,
+              adjustedTileSize
+            );
+          }
+
+          // Load the tile image asynchronously
+          loadTileImage(x, y, tileZoomLevel, config.tileUrl)
+            .then((img) => {
               if (img && currentRenderId === renderId) {
                 ctx.drawImage(img, tilePosX, tilePosY, tileWidth, tileHeight);
               }
@@ -131,8 +173,6 @@ const Map: React.FC = () => {
             .catch((error) => {
               // Handle errors if necessary
             });
-
-          tilePromises.push(promise);
         }
       };
 
@@ -140,6 +180,10 @@ const Map: React.FC = () => {
     };
 
     requestAnimationFrame(render);
+
+    // Update previous zoom level and center
+    previousZoomRef.current = zoom;
+    previousCenterRef.current = center;
 
     return () => {
       renderId++;
