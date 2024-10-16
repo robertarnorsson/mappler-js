@@ -3,7 +3,8 @@ export type MapConfig = {
   tileSize: number;
   minZoom: number;
   maxZoom: number;
-}
+  zoomCenter?: 'mouse' | 'screen';
+};
 
 
 export type MapProps = {

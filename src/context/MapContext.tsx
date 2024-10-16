@@ -13,10 +13,15 @@ const MapContext = createContext<MapContextType | undefined>(undefined);
 
 export const MapProvider: React.FC<{ config: MapConfig; children: ReactNode }> = ({ config, children }) => {
   const [zoom, setZoom] = useState(config.minZoom);
-  const [center, setCenter] = useState<[number, number]>([0, 0]); // Initial center of the map
+  const [center, setCenter] = useState<[number, number]>([0, 0]);
+
+  const mapConfig = {
+    ...config,
+    zoomCenter: config.zoomCenter || 'screen',
+  };
 
   return (
-    <MapContext.Provider value={{ zoom, center, setZoom, setCenter, config }}>
+    <MapContext.Provider value={{ zoom, center, setZoom, setCenter, config: mapConfig }}>
       {children}
     </MapContext.Provider>
   );

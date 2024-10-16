@@ -12,10 +12,34 @@ export const useMapInteraction = (canvasRef: React.RefObject<HTMLCanvasElement>)
 
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault();
+
       const zoomSensitivity = 0.001;
-      const newZoom = zoom - event.deltaY * zoomSensitivity;
-      console.log(newZoom);
-      setZoom(Math.max(config.minZoom, Math.min(config.maxZoom, newZoom)));
+      const deltaZoom = -event.deltaY * zoomSensitivity;
+      const newZoom = zoom + deltaZoom;
+      const clampedZoom = Math.max(config.minZoom, Math.min(config.maxZoom, newZoom));
+
+      if (config.zoomCenter === 'mouse' && canvas) {
+        // Get mouse position relative to the canvas
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+
+        // Calculate the mouse position in map coordinates before zoom
+        const scale = Math.pow(2, zoom);
+        const mapX = center[0] + (mouseX - canvas.width / 2) / scale;
+        const mapY = center[1] + (mouseY - canvas.height / 2) / scale;
+
+        // Calculate the new scale
+        const newScale = Math.pow(2, clampedZoom);
+
+        // Calculate the new center to keep the mouse position fixed
+        const newCenterX = mapX - (mouseX - canvas.width / 2) / newScale;
+        const newCenterY = mapY - (mouseY - canvas.height / 2) / newScale;
+
+        setCenter([newCenterX, newCenterY]);
+      }
+
+      setZoom(clampedZoom);
     };
 
     const handleMouseDown = (event: MouseEvent) => {
