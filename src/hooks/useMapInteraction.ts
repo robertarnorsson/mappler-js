@@ -14,7 +14,7 @@ export const useMapInteraction = (canvasRef: React.RefObject<HTMLCanvasElement>)
       event.preventDefault();
       const zoomSensitivity = 0.001;
       const newZoom = zoom - event.deltaY * zoomSensitivity;
-      setZoom(Math.max(config.minZoom, Math.min(config.maxZoom, newZoom))); // Apply zoom limits
+      setZoom(Math.max(config.minZoom, Math.min(config.maxZoom, newZoom)));
     };
 
     const handleMouseDown = (event: MouseEvent) => {
@@ -25,14 +25,13 @@ export const useMapInteraction = (canvasRef: React.RefObject<HTMLCanvasElement>)
 
     const handleMouseMove = (event: MouseEvent) => {
       if (isDragging.current) {
-        // Calculate the movement in pixels
         const dx = event.clientX - dragStart.current[0];
         const dy = event.clientY - dragStart.current[1];
 
-        // Adjust the center in pixel space, scaled by the zoom level
+        const scale = Math.pow(2, zoom);
         const newCenter: [number, number] = [
-          lastCenter.current[0] - (dx * zoom), // Adjust X (horizontal movement)
-          lastCenter.current[1] - (dy * zoom), // Adjust Y (vertical movement)
+          lastCenter.current[0] - dx / scale,
+          lastCenter.current[1] - dy / scale,
         ];
 
         setCenter(newCenter);
